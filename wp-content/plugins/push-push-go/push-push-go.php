@@ -139,7 +139,7 @@ function pushpush_settings_page()
                                 'X-Token': integrationCode
                             },
                             data: '{"id": "' + embedId + '"}',
-                            dataType: 'text'
+                            dataType: 'json'
                         })
                         .error(checkErrorCallback)
                         .success(checkSuccessCallback);
