@@ -1,0 +1,15 @@
+#pushpushgo .form-table th {
+    vertical-align: middle;
+}
+
+#pushpushgo #integration_code {
+    padding: 20px;
+    width: 320px;
+}
+
+#pushpushgo p.text {
+    background: white;
+    padding: 15px;
+    border-radius: 5px;
+    text-align: center;
+}

@@ -10,20 +10,26 @@
  */
 
 define('PUSHPUSHGO_VERSION', '1.0');
-define('PUSHPUSHGO_API_ADDRESS', 'https://api.stppg.co');
+define('PUSHPUSHGO_API_ADDRESS', 'https://api.pushpushgo.com');
+define('PUSHPUSHGO_APPLICATION_ADDRESS', 'https://app.pushpushgo.com');
+define('PUSHPUSHGO_TUTORIAL_ADDRESS', 'https://pushpushgo.com');
 
-add_action('admin_menu', 'my_plugin_menu');
-function my_plugin_menu()
+add_action('admin_menu', 'puhspush_menu');
+function puhspush_menu()
 {
-    add_menu_page('PushPushGo Settings', 'PushPushGo', 'administrator', 'my-plugin-settings', 'my_plugin_settings_page', 'dashicons-sticky');
+    add_menu_page('PushPushGo Settings', 'PushPushGo', 'administrator', 'pushpushgo-settings', 'pushpush_settings_page', plugin_dir_url(__FILE__) . 'assets/ppg-wp-icon.png');
 }
 
-function my_plugin_settings_page()
+function pushpush_settings_page()
 {
     ?>
 
-    <div class="wrap">
-        <h1><?php echo __('Zintegruj się z PushPush Go', 'push-plugin'); ?></h1>
+    <div class="wrap" id="pushpushgo">
+        <h1><?php echo __('Integracja z PushPush Go'); ?></h1>
+
+        <p class="text">
+            <?php echo __('PushPushGo - Aplikacja służąca do wysyłania powiadomień web push, aby przeprowadzić integrację należy posiadać konto w serwisie <a href="' . PUSHPUSHGO_APPLICATION_ADDRESS . '">PushPushGO!</a>. <br />Po zalogowaniu się do aplikacji przejdź do sekcji Profil i wygeneruj Kod API na samym dole strony, następnie wklej go w poniższym polu i pobierz projekty. <br />Szczegółowa instrukcja integracji znajduje się <a href="' . PUSHPUSHGO_TUTORIAL_ADDRESS . '">TUTAJ</a>'); ?>
+        </p>
 
         <div id="statement" class="notice is-dismissible" style="display: none;">
             <button type="button" class="notice-dismiss">
@@ -36,12 +42,12 @@ function my_plugin_settings_page()
             <?php do_settings_sections('settings-group'); ?>
             <table class="form-table">
                 <tr valign="top">
-                    <th scope="row"><?php echo __('Wpisz swój kod integracyjny', 'push-plugin'); ?></th>
+                    <th scope="row"><?php echo __('Twój kod integracyjny'); ?></th>
                     <td>
                         <label for="integration_code">
                             <input type="text" name="integration_code" id="integration_code"
                                    onchange="clearSavedValues()"
-                                   placeholder="<?php echo __('Kod integracyjny', 'push-plugin'); ?>"
+                                   placeholder="<?php echo __('Kod integracyjny'); ?>"
                                    value="<?php echo esc_attr(get_option('integration_code')); ?>"/>
                         </label>
                     </td>
@@ -54,23 +60,23 @@ function my_plugin_settings_page()
             <table class="wp-list-table widefat fixed striped" style="display: none;" id="projects-table">
                 <thead>
                 <tr>
-                    <td scope="col" class="manage-column"><?php echo __('Projekt', 'push-plugin'); ?></td>
-                    <th scope="col" class="manage-column"><?php echo __('Zintegrowany', 'push-plugin'); ?></th>
-                    <th scope="col" class="manage-column"><?php echo __('Integruj', 'push-plugin'); ?></th>
+                    <td scope="col" class="manage-column"><?php echo __('Projekt'); ?></td>
+                    <th scope="col" class="manage-column"><?php echo __('Zintegrowany'); ?></th>
+                    <th scope="col" class="manage-column"><?php echo __('Integruj'); ?></th>
                 </tr>
                 </thead>
                 <tbody id="projects-table-body"></tbody>
                 <tfoot>
                 <tr>
                     <td scope="col"
-                        class="manage-column column-primary sorted desc"><?php echo __('Projekt', 'push-plugin'); ?></td>
-                    <th scope="col" class="manage-column "><?php echo __('Zintegrowany', 'push-plugin'); ?></th>
-                    <th scope="col" class="manage-column"><?php echo __('Integruj', 'push-plugin'); ?></th>
+                        class="manage-column column-primary sorted desc"><?php echo __('Projekt'); ?></td>
+                    <th scope="col" class="manage-column "><?php echo __('Zintegrowany'); ?></th>
+                    <th scope="col" class="manage-column"><?php echo __('Integruj'); ?></th>
                 </tr>
                 </tfoot>
             </table>
 
-            <?php submit_button(); ?>
+            <?php submit_button(__('Zapisz')); ?>
         </form>
     </div>
     <script type="application/javascript">
@@ -91,7 +97,7 @@ function my_plugin_settings_page()
                 .error(errorCallback);
 
             function errorCallback(response) {
-                renderStatement('<?php echo __('Podany kod jest nieprawidłowy:', 'push-plugin'); ?> ' + response.responseJSON.message, 'error');
+                renderStatement('<?php echo __('Podany kod jest nieprawidłowy'); ?> ', 'error');
             }
 
             function successCallback(response) {
@@ -139,12 +145,20 @@ function my_plugin_settings_page()
                         .success(checkSuccessCallback);
 
                     function checkSuccessCallback(data) {
-                        renderStatement('<?php echo __('Usługa zintegrowana poprawnie', 'push-plugin'); ?>', 'success');
+                        if (data.codePresents) {
+                            renderStatement('<?php echo __('Strona zintegrowana poprawnie'); ?>', 'success');
+                        } else {
+                            checkErrorCallback();
+                        }
                     }
 
                     function checkErrorCallback(response) {
-                        renderStatement('<?php echo __('Wystąpił błąd podczas integracji', 'push-plugin'); ?>', 'error');
+                        renderStatement('<?php echo __(' Integracja nie przebiegła poprawnie, sprawdź podane w projekcie adresy URL czy zgadzają się z adresem Twojej strony'); ?>', 'error');
                     }
+                }
+
+                if (response.length == 0) {
+                    renderStatement('<?php echo __('Aktualnie nie masz utworzonego żadnego projektu w PushPushGO, przejdź do PushPushGO i utwórz nowy projekt.'); ?>', 'info');
                 }
             }
         }
@@ -163,7 +177,7 @@ function my_plugin_settings_page()
 
             paragraph.innerText = content;
 
-            statement.className += type == 'success' ? ' notice-success' : ' notice-error';
+            statement.className += ' notice-' + type;
             statement.appendChild(paragraph);
             statement.style.display = 'block';
         }
@@ -185,3 +199,10 @@ function embed_integration_code()
         echo '<script charset="UTF-8" src="https://cdn.stppg.co/js/' . get_option('project_embed_id') . '.js" async></script>';
     }
 }
+
+add_action('admin_enqueue_scripts', 'admin_enqueue_scripts');
+function admin_enqueue_scripts()
+{
+    wp_enqueue_style('push_style', plugin_dir_url(__FILE__) . 'assets/admin_style.css', array(), PUSHPUSHGO_VERSION);
+}
+
